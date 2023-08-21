@@ -12,11 +12,17 @@ export const userRouter = createTRPCRouter({
       return ctx.prisma.user.findUnique({ where: { email: input.email } });
     }),
 
-  getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.example.findMany();
-  }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
-  }),
+  setRoleToUser: protectedProcedure
+    .input(
+      z.object({
+        email: z.string(),
+        newRole: z.union([z.literal("user"), z.literal("admin")]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.user.update({
+        where: { email: input.email },
+        data: { role: input.newRole },
+      });
+    }),
 });
