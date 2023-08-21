@@ -17,6 +17,11 @@ model Example {
     updatedAt DateTime @updatedAt
 }
 
+enum Role {
+    USER
+    ADMIN
+}
+
 // Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
@@ -52,7 +57,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    role          String    @default("user")
+    role          Role      @default(USER)
 }
 
 model VerificationToken {

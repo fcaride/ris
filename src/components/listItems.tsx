@@ -7,6 +7,7 @@ import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
 import Link from "next/link";
 import * as React from "react";
+import { SignInButton } from "./SignInButton";
 
 export const mainListItems = (
   <React.Fragment>
@@ -52,5 +53,6 @@ export const secondaryListItems = (
       </ListItemIcon>
       <ListItemText primary="Year-end sale" />
     </ListItemButton>
+    <SignInButton />
   </React.Fragment>
 );

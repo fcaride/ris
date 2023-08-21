@@ -8,13 +8,13 @@ import { api } from "~/utils/api";
 
 const Profile = () => {
   const { data } = useSession();
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState<"USER" | "ADMIN">("USER");
   const { mutate } = api.user.setRoleToUser.useMutation({});
 
   const onChangeRole = () => {
     const email = data?.user?.email;
     if (!email) return;
-    mutate({ email, newRole: "user" });
+    mutate({ email, newRole: role });
   };
 
   return (

@@ -3,8 +3,10 @@ import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
   type DefaultSession,
+  type DefaultUser,
   type NextAuthOptions,
 } from "next-auth";
+import type { DefaultJWT } from "next-auth/jwt";
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 
 import { env } from "~/env.mjs";
@@ -17,18 +19,22 @@ import { prisma } from "~/server/db";
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
-  interface Session extends DefaultSession {
+  interface Session {
     user: DefaultSession["user"] & {
       id: string;
-      // ...other properties
-      // role: UserRole;
+      role: string;
     };
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User extends DefaultUser {
+    role: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    role: string;
+  }
 }
 
 /**
@@ -38,7 +44,19 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   secret: env.NEXTAUTH_SECRET,
-  callbacks: {},
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) token.role = user.role;
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+      }
+      session.user.role = token.role;
+      return session;
+    },
+  },
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -46,7 +64,12 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { email: profile.email },
         });
-        return { id: profile.sub, role: user?.role, ...profile };
+        const resProfile = {
+          ...profile,
+          id: profile.sub,
+          role: user?.role ?? "user",
+        };
+        return resProfile;
       },
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
