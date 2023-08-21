@@ -5,11 +5,10 @@ import {
   type DefaultSession,
   type NextAuthOptions,
 } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
-import { api } from "~/utils/api";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -39,19 +38,15 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   secret: env.NEXTAUTH_SECRET,
-  callbacks: {
-    session: ({ session }) => ({
-      ...session,
-    }),
-  },
+  callbacks: {},
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
-      profile(profile) {
-        const user = api.user.getUserRole.useQuery({ email: profile.email });
-
-        console.log("user", user);
-        return { id: profile.sub, ...profile };
+      profile: async (profile: GoogleProfile) => {
+        const user = await prisma.user.findUnique({
+          where: { email: profile.email },
+        });
+        return { id: profile.sub, role: user?.role, ...profile };
       },
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
@@ -70,7 +65,6 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
 };
-
 /**
  * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.
  *
