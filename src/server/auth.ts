@@ -6,8 +6,8 @@ import {
   type DefaultUser,
   type NextAuthOptions,
 } from "next-auth";
-import type { DefaultJWT } from "next-auth/jwt";
-import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
+import type { DefaultJWT, JWT } from "next-auth/jwt";
+import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
@@ -33,6 +33,10 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
+    id: string;
+    name?: string;
+    email?: string;
+    picture?: string;
     role: string;
   }
 }
@@ -45,32 +49,40 @@ declare module "next-auth/jwt" {
 export const authOptions: NextAuthOptions = {
   secret: env.NEXTAUTH_SECRET,
   callbacks: {
-    jwt({ token, user }) {
-      if (user) token.role = user.role;
-      return token;
+    async jwt({ token, user }): Promise<JWT> {
+      console.log("jwt", user);
+      const dbUser = await prisma.user.findFirst({
+        where: { email: token.email },
+      });
+
+      if (!dbUser) {
+        token.id = user.id;
+        return token;
+      }
+
+      return {
+        id: dbUser.id,
+        name: dbUser.name ?? "",
+        email: dbUser.email ?? "",
+        picture: dbUser.image ?? "",
+        role: dbUser.role,
+      };
     },
     session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
+      if (session.user) {
+        session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.picture;
+        session.user.role = token.role;
       }
-      session.user.role = token.role;
+
       return session;
     },
   },
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
-      profile: async (profile: GoogleProfile) => {
-        const user = await prisma.user.findUnique({
-          where: { email: profile.email },
-        });
-        const resProfile = {
-          ...profile,
-          id: profile.sub,
-          role: user?.role ?? "user",
-        };
-        return resProfile;
-      },
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
