@@ -34,7 +34,6 @@ const config = {
     ignoreDuringBuilds: true,
   },
   swcMinify: true,
-  }
 };
 
 export default config;
