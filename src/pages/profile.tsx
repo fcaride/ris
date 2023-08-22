@@ -34,7 +34,14 @@ const Profile = () => {
           value={role}
           onChange={(
             event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-          ) => setRole(event.target.value)}
+          ) => {
+            if (
+              event.target.value === "USER" ||
+              event.target.value === "ADMIN"
+            ) {
+              setRole(event.target.value);
+            }
+          }}
         />
         <Button onClick={onChangeRole}>Save Role</Button>
       </Stack>
