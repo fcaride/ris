@@ -1,5 +1,6 @@
 import { userRouter } from "~/server/api/routers/user";
 import { createTRPCRouter } from "~/server/api/trpc";
+import { examplesRouter } from "../../../prisma/generated/routers/Example.router";
 
 /**
  * This is the primary router for your server.
@@ -8,6 +9,7 @@ import { createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   user: userRouter,
+  example: examplesRouter,
 });
 
 // export type definition of API

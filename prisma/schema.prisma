@@ -13,8 +13,8 @@ generator client {
 
 generator trpc {
     provider        = "prisma-trpc-generator"
+    withMiddleware  = "../src/server/api/trpcMiddleware"
     withZod         = true
-    withMiddleware  = false
     withShield      = false
     contextPath     = "../src/server/api/trpc"
     trpcOptionsPath = "../src/server/api/trpc"

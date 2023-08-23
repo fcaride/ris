@@ -123,18 +123,29 @@ export const createTRPCRouter = t.router;
  */
 export const publicProcedure = t.procedure;
 
-/** Reusable middleware that enforces users are logged in before running the procedure. */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
+type MiddlewareProps = {
+  ctx: {
+    session: Session | null;
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  next: any;
+};
+
+export const authMiddleWare = ({ ctx, next }: MiddlewareProps) => {
   if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
   return next({
     ctx: {
-      // infers the `session` as non-nullable
       session: { ...ctx.session, user: ctx.session.user },
     },
   });
-});
+};
+
+/** Reusable middleware that enforces users are logged in before running the procedure. */
+const enforceUserIsAuthed = t.middleware(authMiddleWare);
 
 /**
  * Protected (authenticated) procedure
