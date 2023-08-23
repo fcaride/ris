@@ -7,7 +7,7 @@
  * need to use are documented accordingly near the end.
  */
 
-import { initTRPC, TRPCError } from "@trpc/server";
+import { TRPCError, initTRPC, type DefaultErrorShape } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
 import superjson from "superjson";
@@ -62,16 +62,20 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 };
 
 /**
- * 2. INITIALIZATION
+ * This is the tRPC options object that will be used to initialize the tRPC server. It is exported
+ * here so that you can use it in your tests.
  *
- * This is where the tRPC API is initialized, connecting the context and transformer. We also parse
- * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
- * errors on the backend.
+ * @see https://trpc.io/docs/context
  */
-
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const options = {
   transformer: superjson,
-  errorFormatter({ shape, error }) {
+  errorFormatter({
+    shape,
+    error,
+  }: {
+    shape: DefaultErrorShape;
+    error: TRPCError;
+  }) {
     return {
       ...shape,
       data: {
@@ -81,7 +85,20 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       },
     };
   },
-});
+};
+
+export default options;
+/**
+ * 2. INITIALIZATION
+ *
+ * This is where the tRPC API is initialized, connecting the context and transformer. We also parse
+ * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
+ * errors on the backend.
+ */
+
+export type Context = typeof createTRPCContext;
+
+const t = initTRPC.context<typeof createTRPCContext>().create(options);
 
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)

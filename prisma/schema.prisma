@@ -11,6 +11,15 @@ generator client {
     provider = "prisma-client-js"
 }
 
+generator trpc {
+    provider        = "prisma-trpc-generator"
+    withZod         = true
+    withMiddleware  = false
+    withShield      = false
+    contextPath     = "../src/server/api/trpc"
+    trpcOptionsPath = "../src/server/api/trpc"
+}
+
 model Example {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
