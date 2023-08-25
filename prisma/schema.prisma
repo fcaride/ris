@@ -12,12 +12,14 @@ generator client {
 }
 
 generator trpc {
-    provider        = "prisma-trpc-generator"
-    withMiddleware  = "../src/server/api/trpcMiddleware"
-    withZod         = true
-    withShield      = false
-    contextPath     = "../src/server/api/trpc"
-    trpcOptionsPath = "../src/server/api/trpc"
+    provider                 = "prisma-trpc-generator"
+    withMiddleware           = "../src/server/api/trpcMiddleware"
+    withZod                  = true
+    withShield               = false
+    contextPath              = "../src/server/api/trpc"
+    trpcOptionsPath          = "../src/server/api/trpc"
+    showModelNameInProcedure = false
+    generateModelActions     = "create,delete,deleteMany,findMany,update,updateMany"
 }
 
 model Example {

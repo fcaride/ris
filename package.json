@@ -1,5 +1,5 @@
 {
-  "name": "food-lovers",
+  "name": "ris",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -24,16 +24,19 @@
     "@trpc/next": "^10.34.0",
     "@trpc/react-query": "^10.34.0",
     "@trpc/server": "^10.34.0",
+    "mui-datatables": "^4.3.0",
     "next": "^13.4.2",
     "next-auth": "^4.22.4",
     "prisma-trpc-generator": "^1.4.1",
     "react": "18.2.0",
+    "react-admin": "^4.13.1",
     "react-dom": "18.2.0",
     "superjson": "^1.13.1",
     "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/eslint": "^8.37.0",
+    "@types/mui-datatables": "^4.3.5",
     "@types/node": "^18.16.0",
     "@types/prettier": "^2.7.2",
     "@types/react": "^18.2.6",
