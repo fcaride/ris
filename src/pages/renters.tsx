@@ -1,4 +1,5 @@
 import { Button, Stack } from "@mui/material";
+import type { Renter } from "@prisma/client";
 import type {
   MUIDataTableColumnDef,
   MUIDataTableOptions,
@@ -35,6 +36,10 @@ const Renters = () => {
 
   const [openModal, setOpenModal] = useState(false);
 
+  const [selectedRenter, setSelectedRenter] = useState<Partial<Renter>>({
+    name: "",
+  });
+
   const { mutate: deleteRenters } = api.renter.deleteMany.useMutation({
     onSuccess: () => {
       void ctx.renter.findMany.invalidate();
@@ -61,6 +66,26 @@ const Renters = () => {
       });
       deleteRenters({ where: { id: { in: ids } } });
     },
+    onRowClick: (_, { dataIndex }) => {
+      const dataRow = data ? data[dataIndex] : null;
+      if (dataRow) {
+        setSelectedRenter(dataRow);
+        setOpenModal(true);
+      }
+    },
+    customToolbar() {
+      return (
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setSelectedRenter({ name: "" });
+            setOpenModal(true);
+          }}
+        >
+          Create Renter
+        </Button>
+      );
+    },
   };
 
   return (
@@ -71,18 +96,10 @@ const Renters = () => {
         columns={columns}
         options={options}
       />
-      <Stack direction="row" justifyContent="space-around" mt={2}>
-        <Button variant="outlined" onClick={() => setOpenModal(true)}>
-          Create Renter
-        </Button>
-
-        <Button variant="outlined" onClick={handleCreateContract}>
-          Create Contract
-        </Button>
-      </Stack>
       <CreateRentalModal
         open={openModal}
         handleClose={() => setOpenModal(false)}
+        selectedRenter={selectedRenter}
       />
     </Stack>
   );

@@ -7,7 +7,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { FormEventHandler } from "react";
+import type { Renter } from "@prisma/client";
+import { useEffect, useState, type FormEventHandler } from "react";
 import { useForm } from "react-hook-form";
 
 import { z } from "zod";
@@ -20,12 +21,27 @@ const schema = z.object({
 type Props = {
   open: boolean;
   handleClose: () => void;
+  selectedRenter: Partial<Renter>;
 };
 
-export const CreateRentalModal = ({ open, handleClose }: Props) => {
+export const CreateRentalModal = ({
+  open,
+  handleClose,
+  selectedRenter,
+}: Props) => {
+  const [isEdit, setIsEdit] = useState<boolean>(false);
   const ctx = api.useContext();
 
   const { mutate: createRenter } = api.renter.createOne.useMutation({
+    onSuccess: () => {
+      void ctx.renter.findMany.invalidate();
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+
+  const { mutate: updateRenter } = api.renter.updateOne.useMutation({
     onSuccess: () => {
       void ctx.renter.findMany.invalidate();
     },
@@ -43,11 +59,28 @@ export const CreateRentalModal = ({ open, handleClose }: Props) => {
   const onSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event?.preventDefault();
     void handleSubmit((data) => {
-      createRenter({ data: { name: data.name } });
-      setValue("name", "");
+      if (isEdit) {
+        updateRenter({
+          data: { name: data.name },
+          where: { id: selectedRenter.id },
+        });
+      } else {
+        createRenter({ data: { name: data.name } });
+        setValue("name", "");
+      }
       handleClose();
     })(event);
   };
+
+  useEffect(() => {
+    if (selectedRenter.name) {
+      setValue("name", selectedRenter.name);
+      setIsEdit(true);
+    } else {
+      setValue("name", "");
+      setIsEdit(false);
+    }
+  }, [selectedRenter.name, setValue]);
 
   return (
     <Dialog onClose={handleClose} open={open}>
@@ -63,7 +96,7 @@ export const CreateRentalModal = ({ open, handleClose }: Props) => {
           />
           <Typography>{errors.name?.message}</Typography>
           <Button type="submit" sx={{ pt: 2 }}>
-            Crear
+            {isEdit ? "Editar" : "Crear"}
           </Button>
         </form>
       </DialogContent>
