@@ -50,7 +50,6 @@ export const authOptions: NextAuthOptions = {
   secret: env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }): Promise<JWT> {
-      console.log("jwt", user);
       const dbUser = await prisma.user.findFirst({
         where: { email: token.email },
       });
@@ -60,6 +59,7 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
+      console.log("jwt", dbUser);
       return {
         id: dbUser.id,
         name: dbUser.name ?? "",
@@ -69,6 +69,7 @@ export const authOptions: NextAuthOptions = {
       };
     },
     session({ session, token }) {
+      console.log("session", session);
       if (session.user) {
         session.user.id = token.id;
         session.user.name = token.name;

@@ -20,12 +20,7 @@ generator trpc {
     trpcOptionsPath          = "../src/server/api/trpc"
     showModelNameInProcedure = false
     generateModelActions     = "create,delete,deleteMany,findMany,update,updateMany"
-}
-
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    isGenerateInclude        = true
 }
 
 enum Role {
@@ -72,6 +67,10 @@ model User {
     accounts      Account[]
     sessions      Session[]
     role          Role      @default(USER)
+    renter        Renter?   @relation(fields: [renterId], references: [id], onDelete: Cascade)
+    renterId      String?
+
+    @@index([renterId])
 }
 
 model VerificationToken {
@@ -80,4 +79,87 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Renter {
+    id        String     @id @unique @default(cuid())
+    name      String     @unique
+    createdAt DateTime?  @default(now())
+    updatedAt DateTime?  @updatedAt
+    User      User[]
+    Contract  Contract[]
+    Vehicle   Vehicle[]
+}
+
+model Contract {
+    id           String         @id @unique @default(cuid())
+    startsAt     DateTime?
+    endsAt       DateTime?
+    renter       Renter         @relation(fields: [renterId], references: [id], onDelete: Cascade)
+    contractFile Bytes?
+    renterId     String
+    ContractRate ContractRate[]
+
+    @@index([renterId])
+}
+
+model ContractRate {
+    id          String        @id @unique @default(cuid())
+    rate        Float
+    contract    Contract?     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+    rateType    RateType
+    contractId  String?
+    Endorsement Endorsement[]
+
+    @@index([contractId])
+}
+
+model Vehicle {
+    id                  String        @id @unique @default(cuid())
+    registration_number String        @unique
+    chassis_number      String
+    model               CarModel      @relation(fields: [carModelId], references: [id])
+    renter              Renter        @relation(fields: [renterId], references: [id], onDelete: Cascade)
+    color               String
+    carModelId          String
+    renterId            String
+    Endorsement         Endorsement[]
+
+    @@index([carModelId])
+    @@index([renterId])
+}
+
+model CarModel {
+    id         String    @id @unique @default(cuid())
+    brand      CarBrand  @relation(fields: [carBrandId], references: [id])
+    name       String
+    Vehicle    Vehicle[]
+    carBrandId String
+
+    @@index([carBrandId])
+}
+
+model CarBrand {
+    id       String     @id @unique @default(cuid())
+    name     String     @unique
+    CarModel CarModel[]
+}
+
+model Endorsement {
+    id             String       @id @unique @default(cuid())
+    startsAt       DateTime
+    endsAt         DateTime
+    vehicle        Vehicle      @relation(fields: [vehicleId], references: [id])
+    contractRate   ContractRate @relation(fields: [contractRateId], references: [id])
+    vehicleId      String
+    contractRateId String
+
+    @@index([vehicleId])
+    @@index([contractRateId])
+}
+
+enum RateType {
+    BASIC
+    ALL_RISK
+    TRIPLE
 }

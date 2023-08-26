@@ -98,7 +98,7 @@ export default options;
 
 export type Context = typeof createTRPCContext;
 
-const t = initTRPC.context<typeof createTRPCContext>().create(options);
+export const t = initTRPC.context<typeof createTRPCContext>().create(options);
 
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
