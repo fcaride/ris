@@ -23,9 +23,21 @@ generator trpc {
     isGenerateInclude        = true
 }
 
+enum Category {
+    CAT1
+    CAT2
+    CAT3
+}
+
 enum Role {
     USER
     ADMIN
+}
+
+enum RateType {
+    BASIC
+    ALL_RISK
+    TRIPLE
 }
 
 // Necessary for Next auth
@@ -93,10 +105,9 @@ model Renter {
 
 model Contract {
     id           String         @id @unique @default(cuid())
-    startsAt     DateTime?
-    endsAt       DateTime?
+    startsAt     DateTime
+    endsAt       DateTime
     renter       Renter         @relation(fields: [renterId], references: [id], onDelete: Cascade)
-    contractFile Bytes?
     renterId     String
     ContractRate ContractRate[]
 
@@ -107,9 +118,10 @@ model ContractRate {
     id          String        @id @unique @default(cuid())
     rate        Float
     contract    Contract?     @relation(fields: [contractId], references: [id], onDelete: Cascade)
-    rateType    RateType
+    rateType    RateType      @default(BASIC)
     contractId  String?
     Endorsement Endorsement[]
+    category    Category      @default(CAT1)
 
     @@index([contractId])
 }
@@ -123,6 +135,7 @@ model Vehicle {
     color               String
     carModelId          String
     renterId            String
+    category            Category      @default(CAT1)
     Endorsement         Endorsement[]
 
     @@index([carModelId])
@@ -156,10 +169,4 @@ model Endorsement {
 
     @@index([vehicleId])
     @@index([contractRateId])
-}
-
-enum RateType {
-    BASIC
-    ALL_RISK
-    TRIPLE
 }

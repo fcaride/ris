@@ -3,6 +3,7 @@ import { accountsRouter } from "../../../prisma/generated/routers/Account.router
 import { contractsRouter } from "../../../prisma/generated/routers/Contract.router";
 import { rentersRouter } from "../../../prisma/generated/routers/Renter.router";
 import { usersRouter } from "../../../prisma/generated/routers/User.router";
+import { contractRouter } from "./routers/contracts";
 import { userRouter as customUserRouter } from "./routers/user";
 
 /**
@@ -12,6 +13,7 @@ import { userRouter as customUserRouter } from "./routers/user";
  */
 export const appRouter = createTRPCRouter({
   customUser: customUserRouter,
+  customContract: contractRouter,
   user: usersRouter,
   account: accountsRouter,
   renter: rentersRouter,

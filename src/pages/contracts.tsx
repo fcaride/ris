@@ -1,52 +1,57 @@
 import { Button, Stack } from "@mui/material";
-import type { Renter } from "@prisma/client";
+import type { Contract, Renter } from "@prisma/client";
 import type {
   MUIDataTableColumnDef,
   MUIDataTableOptions,
 } from "mui-datatables";
 import MUIDataTable from "mui-datatables";
 import { useState } from "react";
-import { CreateRentalModal } from "~/components/CreateRentalModal";
+import { ContractModal } from "~/components/ContractModal/ContractModal";
 import { api } from "~/utils/api";
 
 const columns: MUIDataTableColumnDef[] = [
   {
-    name: "name",
-    label: "Nombre",
+    name: "renter",
+    label: "Rentadora",
+    options: {
+      customBodyRender: (renter: Renter) => renter.name,
+    },
   },
   {
-    name: "createdAt",
-    label: "Fecha de creación",
+    name: "startsAt",
+    label: "Inicio",
     options: {
       customBodyRender: (value: Date) => new Date(value).toLocaleDateString(),
     },
   },
 
   {
-    name: "updatedAt",
-    label: "Fecha de actualización",
+    name: "endsAt",
+    label: "Fin",
     options: {
       customBodyRender: (value: Date) => new Date(value).toLocaleDateString(),
     },
   },
 ];
 
-const Renters = () => {
+const Contracts = () => {
   const ctx = api.useContext();
 
   const [openModal, setOpenModal] = useState(false);
 
-  const [selectedRenter, setSelectedRenter] = useState<Partial<Renter>>({});
+  const [selectedContract, setSelectedContract] = useState<
+    Contract | undefined
+  >();
 
-  const { mutate: deleteRenters } = api.renter.deleteMany.useMutation({
+  const { mutate: deleteContracts } = api.contract.deleteMany.useMutation({
     onSuccess: () => {
-      void ctx.renter.findMany.invalidate();
+      void ctx.customContract.findMany.invalidate();
     },
   });
 
-  const { mutate: createContract } = api.contract.createOne.useMutation({});
+  const { data } = api.customContract.findMany.useQuery({});
 
-  const { data } = api.renter.findMany.useQuery({});
+  api.contract.findMany.useQuery({ include: { renter: true } });
 
   const options: Partial<MUIDataTableOptions> = {
     filterType: "checkbox",
@@ -58,12 +63,12 @@ const Renters = () => {
           ids.push(dataRow.id);
         }
       });
-      deleteRenters({ where: { id: { in: ids } } });
+      deleteContracts({ where: { id: { in: ids } } });
     },
     onRowClick: (_, { dataIndex }) => {
       const dataRow = data ? data[dataIndex] : null;
       if (dataRow) {
-        setSelectedRenter(dataRow);
+        setSelectedContract(dataRow);
         setOpenModal(true);
       }
     },
@@ -72,11 +77,11 @@ const Renters = () => {
         <Button
           variant="outlined"
           onClick={() => {
-            setSelectedRenter({ name: "" });
+            setSelectedContract(undefined);
             setOpenModal(true);
           }}
         >
-          Create Renter
+          Create Contract
         </Button>
       );
     },
@@ -85,18 +90,18 @@ const Renters = () => {
   return (
     <Stack>
       <MUIDataTable
-        title="Rentadoras"
+        title="Contractos"
         data={data ?? []}
         columns={columns}
         options={options}
       />
-      <CreateRentalModal
+      <ContractModal
         open={openModal}
         handleClose={() => setOpenModal(false)}
-        selectedRenter={selectedRenter}
+        selectedContract={selectedContract}
       />
     </Stack>
   );
 };
 
-export default Renters;
+export default Contracts;

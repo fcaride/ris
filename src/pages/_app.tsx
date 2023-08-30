@@ -8,6 +8,8 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import Layout from "~/components/layout";
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -17,7 +19,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <Layout>
-        <Component {...pageProps} />
+        <LocalizationProvider dateAdapter={AdapterMoment}>
+          <Component {...pageProps} />
+        </LocalizationProvider>
       </Layout>
     </SessionProvider>
   );

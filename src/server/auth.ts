@@ -58,8 +58,6 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         return token;
       }
-
-      console.log("jwt", dbUser);
       return {
         id: dbUser.id,
         name: dbUser.name ?? "",
@@ -69,7 +67,6 @@ export const authOptions: NextAuthOptions = {
       };
     },
     session({ session, token }) {
-      console.log("session", session);
       if (session.user) {
         session.user.id = token.id;
         session.user.name = token.name;
