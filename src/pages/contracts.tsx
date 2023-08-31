@@ -1,5 +1,5 @@
 import { Button, Stack } from "@mui/material";
-import type { Contract, Renter } from "@prisma/client";
+import type { Contract, ContractRate, Renter } from "@prisma/client";
 import type {
   MUIDataTableColumnDef,
   MUIDataTableOptions,
@@ -34,13 +34,18 @@ const columns: MUIDataTableColumnDef[] = [
   },
 ];
 
+export type ContractWithData = Contract & {
+  renter: Renter;
+  ContractRate: ContractRate[];
+};
+
 const Contracts = () => {
   const ctx = api.useContext();
 
   const [openModal, setOpenModal] = useState(false);
 
   const [selectedContract, setSelectedContract] = useState<
-    Contract | undefined
+    ContractWithData | undefined
   >();
 
   const { mutate: deleteContracts } = api.contract.deleteMany.useMutation({
@@ -50,8 +55,6 @@ const Contracts = () => {
   });
 
   const { data } = api.customContract.findMany.useQuery({});
-
-  api.contract.findMany.useQuery({ include: { renter: true } });
 
   const options: Partial<MUIDataTableOptions> = {
     filterType: "checkbox",

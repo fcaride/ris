@@ -7,7 +7,10 @@ type Props = {
   contractRates: ContractRateInputs[];
 };
 
-export type ContractRateInputs = Omit<ContractRate, "id" | "contractId">;
+export type ContractRateInputs = Omit<ContractRate, "id" | "contractId"> & {
+  id?: string;
+  deleted?: boolean;
+};
 
 const initialContractRate = {
   rate: 0,
@@ -32,13 +35,15 @@ export const MultiContractRateHandler = ({
 
   return (
     <Stack>
-      {contractRates.map((contractRate, index) => (
-        <ContractRateSelector
-          key={index}
-          onChangeRate={handleContractRateChange(index)}
-          contractRate={contractRate}
-        />
-      ))}
+      {contractRates
+        .filter((rate) => !rate.deleted)
+        .map((contractRate, index) => (
+          <ContractRateSelector
+            key={index}
+            onChangeRate={handleContractRateChange(index)}
+            contractRate={contractRate}
+          />
+        ))}
       <Button
         onClick={() =>
           onChangeContractRates([...contractRates, initialContractRate])

@@ -21,11 +21,7 @@ export const ContractRateSelector = ({ onChangeRate, contractRate }: Props) => {
   const handleChangeRate = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    let value = event.target.value;
-    if (value.endsWith(".")) {
-      value = value.slice(-1, 1);
-    }
-    const newRate = value ? parseFloat(value) : 0;
+    const newRate = Number(event.target.value);
     onChangeRate({
       ...contractRate,
       rate: newRate,
@@ -35,23 +31,26 @@ export const ContractRateSelector = ({ onChangeRate, contractRate }: Props) => {
   return (
     <Stack direction="row" justifyContent="space-between" pb={2} spacing={2}>
       <TextField
-        label="precio"
+        label="Precio"
         value={contractRate.rate}
         onChange={handleChangeRate}
         type="number"
+        InputProps={{ inputProps: { min: 1 } }}
       />
       <GenericSelect<Category>
         onChange={handleChangeCategory}
         value={contractRate.category}
         values={Object.values(Category)}
+        label="Categoria"
       />
       <GenericSelect<RateType>
         onChange={handleChangeRateType}
         value={contractRate.rateType}
         values={Object.values(RateType)}
+        label="Tipo"
       />
 
-      <Button onClick={() => onChangeRate(undefined)}>
+      <Button onClick={() => onChangeRate({ ...contractRate, deleted: true })}>
         <RemoveCircleOutlineIcon />
       </Button>
     </Stack>

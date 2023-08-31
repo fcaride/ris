@@ -1,6 +1,7 @@
 import { createTRPCRouter } from "~/server/api/trpc";
 import { accountsRouter } from "../../../prisma/generated/routers/Account.router";
 import { contractsRouter } from "../../../prisma/generated/routers/Contract.router";
+import { contractratesRouter } from "../../../prisma/generated/routers/ContractRate.router";
 import { rentersRouter } from "../../../prisma/generated/routers/Renter.router";
 import { usersRouter } from "../../../prisma/generated/routers/User.router";
 import { contractRouter } from "./routers/contracts";
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   account: accountsRouter,
   renter: rentersRouter,
   contract: contractsRouter,
+  contractRate: contractratesRouter,
 });
 
 // export type definition of API
